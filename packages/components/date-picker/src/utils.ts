@@ -6,6 +6,28 @@ import type { DateCell } from './date-picker.type'
 
 type DayRange = [Dayjs | undefined, Dayjs | undefined]
 
+export const handleWeekLastDay = (date: any) => {
+  const firstDayOfWeek = date.$locale().weekStart || 7
+  const day = date.day() || 7
+  const weekStartDay =
+    firstDayOfWeek === day ? 6 : Math.abs(firstDayOfWeek - day + 6)
+
+  const newDate = date.add(weekStartDay, 'day')
+
+  return newDate
+}
+
+export const handleWeekOneDay = (date: any) => {
+  const firstDayOfWeek = date.$locale().weekStart || 7
+  const day = date.day() || 7
+  const weekStartDay =
+    firstDayOfWeek === day ? 0 : Math.abs(2 - firstDayOfWeek - day)
+
+  const newDate = date.subtract(weekStartDay, 'day')
+
+  return newDate
+}
+
 export const isValidRange = (range: DayRange): boolean => {
   if (!isArray(range)) return false
 

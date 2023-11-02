@@ -6,19 +6,26 @@
   margin: -1px;
   border-collapse: collapse;
 
-  .#{$namespace}-icon {
-    color: getCssVar('datepicker', 'icon-color');
-  }
-
   td {
     text-align: center;
-    padding: 20px 3px;
+    padding: 8px 0;
     cursor: pointer;
+
+    & div {
+      height: 48px;
+      padding: 6px 0;
+      box-sizing: border-box;
+    }
 
     &.today {
       .cell {
-        color: getCssVar('color', 'primary');
+        color: getCssVar('color-primary');
         font-weight: bold;
+      }
+
+      &.start-date .cell,
+      &.end-date .cell {
+        color: $color-white;
       }
     }
 
@@ -33,17 +40,46 @@
     }
 
     .cell {
-      width: 48px;
+      width: 60px;
       height: 36px;
       display: block;
       line-height: 36px;
       color: getCssVar('datepicker-text-color');
-      border-radius: 18px;
       margin: 0 auto;
+      border-radius: 18px;
 
       &:hover {
         color: getCssVar('datepicker-hover-text-color');
       }
+    }
+
+    &.in-range div {
+      background-color: getCssVar('datepicker-inrange-bg-color');
+
+      &:hover {
+        background-color: getCssVar('datepicker-inrange-hover-bg-color');
+      }
+    }
+
+    &.start-date div,
+    &.end-date div {
+      color: $color-white;
+    }
+
+    &.start-date .cell,
+    &.end-date .cell {
+      color: $color-white;
+      background-color: getCssVar('datepicker-active-color');
+    }
+
+    &.start-date div {
+      border-top-left-radius: 24px;
+      border-bottom-left-radius: 24px;
+    }
+
+    &.end-date div {
+      border-top-right-radius: 24px;
+      border-bottom-right-radius: 24px;
     }
 
     &.current:not(.disabled) .cell {
@@ -52,6 +88,7 @@
 
     &:focus-visible {
       outline: none;
+
       .cell {
         outline: 2px solid getCssVar('datepicker-active-color');
       }

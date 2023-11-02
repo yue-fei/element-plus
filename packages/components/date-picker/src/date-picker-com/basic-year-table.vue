@@ -4,6 +4,7 @@
     :aria-label="t('el.datepicker.yearTablePrompt')"
     :class="ns.b()"
     @click="handleYearTableClick"
+    @mousemove="handleMouseMove"
   >
     <tbody ref="tbodyRef">
       <tr v-for="(_, i) in 3" :key="i">
@@ -21,7 +22,9 @@
             @keydown.space.prevent.stop="handleYearTableClick"
             @keydown.enter.prevent.stop="handleYearTableClick"
           >
-            <span class="cell">{{ startYear + i * 4 + j }}</span>
+            <div>
+              <span class="cell">{{ startYear + i * 4 + j }}</span>
+            </div>
           </td>
           <td v-else />
         </template>
@@ -46,7 +49,7 @@ const datesInYear = (year: number, lang: string) => {
 }
 
 const props = defineProps(basicYearTableProps)
-const emit = defineEmits(['pick'])
+const emit = defineEmits(['changerange', 'pick', 'select'])
 
 const ns = useNamespace('year-table')
 
@@ -74,6 +77,21 @@ const getCellKls = (year: number) => {
 
   kls.today = today.year() === year
 
+  if (props.selectionMode === 'range') {
+    if (props.minDate) {
+      const minYear = props.minDate.year()
+      kls['start-date'] = year === minYear
+
+      if (props.rangeState.endDate || props.maxDate) {
+        const maxYear = props.rangeState.endDate
+          ? props.rangeState.endDate
+          : props.maxDate.year()
+        kls['end-date'] = minYear && year === maxYear
+        kls['in-range'] = minYear && year >= minYear && year <= maxYear
+      }
+    }
+  }
+
   return kls
 }
 
@@ -86,13 +104,46 @@ const isSelectedCell = (year: number) => {
   )
 }
 
+const handleMouseMove = (event: MouseEvent) => {
+  if (!props.rangeState.selecting) return
+
+  let target = event.target as HTMLElement
+  if (target.tagName === 'A') {
+    target = target.parentNode?.parentNode as HTMLElement
+  }
+  if (target.tagName === 'DIV') {
+    target = target.parentNode as HTMLElement
+  }
+  if (target.tagName !== 'TD') return
+
+  emit('changerange', {
+    selecting: true,
+    endDate: Number(target.textContent || target.innerText),
+  })
+}
+
 const handleYearTableClick = (event: MouseEvent | KeyboardEvent) => {
   const clickTarget = event.target as HTMLDivElement
   const target = clickTarget.closest('td')
   if (target && target.textContent) {
     if (hasClass(target, 'disabled')) return
     const year = target.textContent || target.innerText
-    emit('pick', Number(year))
+    const newDate = props.date.year(Number(year))
+    if (props.selectionMode === 'range') {
+      if (!props.rangeState.selecting) {
+        emit('pick', { minDate: newDate, maxDate: null })
+        emit('select', true)
+      } else {
+        if (props.minDate && newDate >= props.minDate) {
+          emit('pick', { minDate: props.minDate, maxDate: newDate })
+        } else {
+          emit('pick', { minDate: newDate, maxDate: props.minDate })
+        }
+        emit('select', false)
+      }
+    } else {
+      emit('pick', Number(year))
+    }
   }
 }
 
